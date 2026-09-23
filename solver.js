@@ -12,25 +12,84 @@ const LLM_QS = new Set(["q-binary-eval-rubric", "q-get-llm-to-say-yes"]);
 // ---------------------------------------------------------------- panel
 function panel() {
   document.getElementById("ga0-solver")?.remove();
+  if (!document.getElementById("ga0-fonts")) {
+    const f = document.createElement("link");
+    f.id = "ga0-fonts";
+    f.rel = "stylesheet";
+    f.href = "https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@500&family=Caveat:wght@600&display=swap";
+    document.head.appendChild(f);
+  }
   const el = document.createElement("div");
   el.id = "ga0-solver";
-  el.style.cssText =
-    "position:fixed;right:16px;bottom:16px;z-index:99999;width:360px;max-height:80vh;overflow:auto;" +
-    "background:#0f172a;color:#e2e8f0;font:13px/1.45 system-ui,sans-serif;border-radius:12px;" +
-    "box-shadow:0 12px 40px rgba(0,0,0,.45);padding:14px 16px;border:1px solid #334155";
   el.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong style="font-size:15px">GA0 Solver</strong>
-      <button id="ga0-x" style="background:none;border:0;color:#94a3b8;font-size:18px;cursor:pointer">×</button>
-    </div>
-    <div id="ga0-who" style="color:#94a3b8;margin-bottom:8px"></div>
-    <label style="display:block;color:#94a3b8;margin-bottom:4px">AI Pipe token (for Q2 + Q12, optional)</label>
-    <input id="ga0-tok" type="password" placeholder="eyJ…  — leave empty to skip 3 marks"
-      style="width:100%;box-sizing:border-box;padding:6px 8px;border-radius:6px;border:1px solid #475569;background:#1e293b;color:#e2e8f0;margin-bottom:8px">
-    <button id="ga0-go" style="width:100%;padding:9px;border:0;border-radius:8px;background:#22c55e;color:#052e16;font-weight:700;cursor:pointer">Start</button>
-    <div id="ga0-score" style="font-size:22px;font-weight:800;margin:10px 0 4px"></div>
-    <div id="ga0-chips" style="display:flex;flex-wrap:wrap;gap:4px"></div>
-    <pre id="ga0-log" style="white-space:pre-wrap;color:#94a3b8;font-size:11.5px;margin:8px 0 0;max-height:220px;overflow:auto"></pre>`;
+    <style>
+      #ga0-solver { --paper:#faf8f5; --paper2:#f3eee9; --ink:#e24a7b; --deep:#a8204f; --soft:rgba(226,74,123,.12);
+        --graphite:#232327; --muted:#6e6770; --pen:#1f3fbf;
+        position:fixed; right:18px; bottom:18px; z-index:2147483000; width:372px; max-width:calc(100vw - 24px);
+        max-height:calc(100vh - 36px); overflow:auto; background:var(--paper); color:var(--graphite);
+        border:2px solid var(--ink); box-shadow:10px 10px 0 -2px var(--soft), 0 24px 60px -20px rgba(0,0,0,.55);
+        font:400 13.5px/1.5 "Archivo", system-ui, sans-serif; text-align:left; }
+      #ga0-solver * { box-sizing:border-box; font-family:inherit; }
+      #ga0-solver .h { display:flex; align-items:center; justify-content:space-between; padding:10px 14px;
+        border-bottom:2px solid var(--ink); color:var(--deep); }
+      #ga0-solver .h b { font:800 14px "Archivo"; font-variation-settings:"wdth" 118; letter-spacing:.03em; }
+      #ga0-solver .x { background:none; border:0; color:var(--deep); font-size:20px; line-height:1; cursor:pointer; padding:0 2px; }
+      #ga0-solver .body { padding:12px 14px 14px; }
+      #ga0-solver .who { font-size:12.5px; color:var(--muted); margin:0 0 10px; }
+      #ga0-solver .who b { color:var(--graphite); font-weight:600; }
+      #ga0-solver label { display:block; font-size:12px; color:var(--deep); margin:0 0 4px; }
+      #ga0-solver input { width:100%; padding:8px 10px; border:2px solid var(--ink); background:#fff; color:var(--graphite);
+        font:500 12.5px "JetBrains Mono", monospace; outline:none; margin:0 0 10px; }
+      #ga0-solver input:focus { border-color:var(--pen); }
+      #ga0-solver .go { width:100%; padding:10px; border:0; background:var(--ink); color:#fff; cursor:pointer;
+        font:800 14.5px "Archivo"; font-variation-settings:"wdth" 112; letter-spacing:.02em; }
+      #ga0-solver .go:hover:not(:disabled) { background:var(--deep); }
+      #ga0-solver .go:disabled { opacity:.75; cursor:progress; }
+      #ga0-solver .sheet { margin-top:12px; border:2px solid var(--ink); display:none; }
+      #ga0-solver .sheet.on { display:block; }
+      #ga0-solver .grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:10px; }
+      #ga0-solver .bub { width:100%; aspect-ratio:1; max-width:44px; justify-self:center; border-radius:50%;
+        border:1.5px solid var(--ink); display:grid; place-items:center; cursor:help; position:relative;
+        font:700 11px "Archivo"; font-variation-settings:"wdth" 80; color:var(--deep); background:var(--paper);
+        transition:background .25s, color .25s, transform .25s; }
+      #ga0-solver .bub.run { animation:ga0pulse 1.2s ease-in-out infinite; }
+      #ga0-solver .bub.ok { background:var(--graphite); border-color:var(--graphite); color:var(--paper); transform:scale(1.04); }
+      #ga0-solver .bub.bad { color:var(--ink); border-width:2px; }
+      #ga0-solver .bub.bad::after { content:"\\2715"; position:absolute; inset:0; display:grid; place-items:center;
+        font-size:22px; color:var(--ink); opacity:.55; }
+      #ga0-solver .bub.skip { border-style:dashed; color:var(--muted); }
+      @keyframes ga0pulse { 50% { background:var(--soft); } }
+      #ga0-solver .foot { display:grid; grid-template-columns:1fr auto; border-top:2px solid var(--ink); }
+      #ga0-solver .legend { padding:8px 10px; font-size:11.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; }
+      #ga0-solver .legend i { display:inline-block; width:10px; height:10px; border-radius:50%; border:1.5px solid var(--ink); vertical-align:-1px; margin-right:3px; }
+      #ga0-solver .legend i.f { background:var(--graphite); border-color:var(--graphite); }
+      #ga0-solver .legend i.d { border-style:dashed; }
+      #ga0-solver .office { border-left:2px solid var(--ink); padding:4px 12px 6px; min-width:118px; }
+      #ga0-solver .office small { display:block; font-size:10.5px; color:var(--deep); }
+      #ga0-solver .marks { font:600 30px/1.05 "Caveat", cursive; color:var(--pen); white-space:nowrap; }
+      #ga0-solver .marks span { font:500 13px "Archivo"; color:var(--muted); }
+      #ga0-solver .log { margin:10px 0 0; padding:8px 10px; background:var(--paper2); border:1.5px dashed var(--ink);
+        font:500 11px/1.55 "JetBrains Mono", monospace; color:var(--graphite); white-space:pre-wrap; max-height:150px; overflow:auto; display:none; }
+      #ga0-solver .log.on { display:block; }
+      #ga0-solver .sig { margin-top:10px; font:600 15px "Caveat", cursive; color:var(--pen); text-align:right; }
+      @media (prefers-reduced-motion: reduce) { #ga0-solver .bub.run { animation:none; background:var(--soft); } }
+    </style>
+    <div class="h"><b>GA0 ANSWER SHEET</b><button class="x" id="ga0-x" aria-label="Close">×</button></div>
+    <div class="body">
+      <p class="who" id="ga0-who"></p>
+      <label for="ga0-tok">AI Pipe token, for Q2 and Q12 (saved in this browser)</label>
+      <input id="ga0-tok" type="password" placeholder="Leave empty to skip those 3 marks" autocomplete="off">
+      <button class="go" id="ga0-go">Start</button>
+      <div class="sheet" id="ga0-sheet">
+        <div class="grid" id="ga0-chips"></div>
+        <div class="foot">
+          <div class="legend"><span><i class="f"></i>correct</span><span><i></i>wrong</span><span><i class="d"></i>skipped</span></div>
+          <div class="office"><small>Marks obtained</small><div class="marks"><output id="ga0-score">0</output> <span id="ga0-max"></span></div></div>
+        </div>
+      </div>
+      <pre class="log" id="ga0-log"></pre>
+      <div class="sig">made by Angad Jangir</div>
+    </div>`;
   document.body.appendChild(el);
   el.querySelector("#ga0-x").onclick = () => el.remove();
   // Remember the AI Pipe token in this browser so reruns need one click.
@@ -40,20 +99,18 @@ function panel() {
   const $ = (s) => el.querySelector(s);
   return {
     $,
-    log: (m) => { $("#ga0-log").textContent += m + "\n"; $("#ga0-log").scrollTop = 1e9; },
+    log: (m) => { const l = $("#ga0-log"); l.classList.add("on"); l.textContent += m + "\n"; l.scrollTop = 1e9; },
     chip: (i, id, state, title = "") => {
+      $("#ga0-sheet").classList.add("on");
       let c = $(`#ga0-c-${i}`);
       if (!c) {
         c = document.createElement("span");
         c.id = `ga0-c-${i}`;
-        c.style.cssText = "padding:2px 7px;border-radius:999px;font-size:11px;font-weight:700;cursor:help";
         $("#ga0-chips").appendChild(c);
       }
-      const col = { ok: ["#14532d", "#86efac"], bad: ["#7f1d1d", "#fca5a5"], run: ["#1e293b", "#94a3b8"], skip: ["#422006", "#fcd34d"] }[state];
-      c.style.background = col[0];
-      c.style.color = col[1];
-      c.textContent = `Q${i + 1}`;
-      c.title = `${id}${title ? "\n" + title : ""}`;
+      c.className = `bub ${state}`;
+      c.textContent = String(i + 1);
+      c.title = `Q${i + 1} ${id}${title ? "\n" + title : ""}`;
     },
   };
 }
@@ -617,7 +674,8 @@ async function solve(ui) {
     const why = input?.closest("[data-question]")?.querySelector(".invalid-feedback")?.textContent || "";
     ui.chip(i, id, ok ? "ok" : "bad", ok ? "" : why.slice(0, 300));
   });
-  ui.$("#ga0-score").textContent = `${total} / ${max}`;
+  ui.$("#ga0-score").textContent = String(total);
+  ui.$("#ga0-max").textContent = `/ ${max}`;
   log(saved.replace(/\s+/g, " ").slice(0, 200));
   log(`done in ${((performance.now() - t0) / 1000).toFixed(1)}s — see "Recent saves" on the page for the official score`);
 }
@@ -659,7 +717,7 @@ function main() {
   }
   const ui = panel();
   const user = JSON.parse(localStorage.getItem("user") || "null");
-  ui.$("#ga0-who").textContent = user?.email ? `Logged in as ${user.email}` : "Not logged in — sign in on the exam page first";
+  ui.$("#ga0-who").innerHTML = user?.email ? `Candidate <b>${user.email.replace(/[<>&"]/g, "")}</b>` : "Not signed in. Log in on the exam page first.";
   ui.$("#ga0-go").onclick = async () => {
     ui.$("#ga0-go").disabled = true;
     ui.$("#ga0-go").textContent = "Working…";
