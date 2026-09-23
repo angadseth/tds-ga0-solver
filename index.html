@@ -93,6 +93,16 @@
     .stamp.hit { animation: stamp .55s cubic-bezier(.2, 1.4, .4, 1) forwards; }
     @keyframes stamp { 60% { opacity: .95; transform: rotate(-9deg) scale(.94); } 100% { opacity: .9; transform: rotate(-9deg) scale(1); } }
     .note { font: 600 19px "Caveat", cursive; color: var(--pen); margin: 14px 0 0; transform: rotate(-1deg); }
+    .bm-box { display: flex; gap: 16px; align-items: center; margin-top: 26px; padding: 14px 16px; border: 2px dashed var(--ink); }
+    .bm-box p { margin: 0; font-size: 14.5px; color: var(--muted); }
+    .bm-box b { color: var(--text); }
+    .bm {
+      flex: none; text-decoration: none; cursor: grab; font: 800 14px "Archivo"; font-variation-settings: "wdth" 105;
+      color: var(--paper); background: var(--graphite); padding: 10px 16px; border-radius: 999px;
+      box-shadow: 0 2px 0 var(--ink);
+    }
+    .bm::before { content: "★  "; color: var(--ink); }
+    .bm:active { cursor: grabbing; }
 
     /* ---------- OMR grid ---------- */
     .omr { border: 2px solid var(--ink); background: var(--paper); }
@@ -211,6 +221,11 @@
             <div class="stamp" id="s1">COPIED</div>
           </div>
           <p class="note">Chrome may ask you to type "allow pasting" first.</p>
+
+          <div class="bm-box">
+            <a class="bm" href="javascript:void(import('https://angadseth.github.io/tds-ga0-solver/solver.js?'+Date.now()))" onclick="event.preventDefault()" title="Drag me to your bookmarks bar">GA0 Solver</a>
+            <p><b>Skip the console next time.</b> Drag this button to your bookmarks bar once. On the exam page, click the bookmark and the solver opens.</p>
+          </div>
         </div>
 
         <div class="omr" aria-label="Sample answer sheet being filled">
@@ -228,7 +243,7 @@
           <h2>Instructions to candidates<small>It all runs in your own logged-in exam tab, so the save is yours and signed by the exam.</small></h2>
           <ol class="instructions">
             <li><div><b>Sign in to the exam</b><p>Open <a href="https://exam.sanand.workers.dev/tds-2026-09-ga0" target="_blank" rel="noopener">tds-2026-09-ga0</a> and log in with your IITM Google account.</p></div></li>
-            <li><div><b>Paste the line</b><p>Press <kbd>F12</kbd>, open Console, paste the command above and press <kbd>Enter</kbd>. A panel opens in the bottom-right corner.</p></div></li>
+            <li><div><b>Open the solver</b><p>Click the GA0 Solver bookmark, or press <kbd>F12</kbd>, open Console, paste the command above and press <kbd>Enter</kbd>. A panel opens in the bottom-right corner.</p></div></li>
             <li><div><b>Add your AI Pipe token</b><p>Optional. Q2 and Q12 are graded by AI Pipe with your own token. Leave it empty to skip those 3 marks.</p></div></li>
             <li><div><b>Press Start</b><p>Every box is filled and checked, then saved. The panel shows each question as it lands and your total at the end.</p></div></li>
           </ol>

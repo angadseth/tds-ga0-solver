@@ -33,6 +33,10 @@ function panel() {
     <pre id="ga0-log" style="white-space:pre-wrap;color:#94a3b8;font-size:11.5px;margin:8px 0 0;max-height:220px;overflow:auto"></pre>`;
   document.body.appendChild(el);
   el.querySelector("#ga0-x").onclick = () => el.remove();
+  // Remember the AI Pipe token in this browser so reruns need one click.
+  const tok = el.querySelector("#ga0-tok");
+  try { tok.value = localStorage.getItem("ga0-aipipe-token") || ""; } catch {}
+  tok.addEventListener("change", () => { try { localStorage.setItem("ga0-aipipe-token", tok.value.trim()); } catch {} });
   const $ = (s) => el.querySelector(s);
   return {
     $,
