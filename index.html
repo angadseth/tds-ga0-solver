@@ -4,239 +4,273 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>GA0 Solver</title>
-  <meta name="description" content="TDS 2026 Sep GA0 — all 25 questions from one paste on the exam page. Made by Angad Jangir.">
+  <meta name="description" content="TDS 2026 Sep GA0 — fill all 25 answers with one paste on the exam page. Made by Angad Jangir.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=JetBrains+Mono:wght@500;700&family=Mrs+Saint+Delafield&family=Caveat:wght@600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #0e1a2b;
-      --deep: #0a1422;
-      --surface: #15263d;
-      --line: #243a57;
-      --text: #eef2f7;
-      --muted: #8fa3bd;
-      --gold: #e8b64c;
-      --gold-soft: rgba(232, 182, 76, .14);
-      --pass: #4fd1a5;
-      --pass-soft: rgba(79, 209, 165, .16);
-      --shadow: 0 30px 80px -30px rgba(0, 0, 0, .7);
+      --paper: #faf8f5;
+      --paper-2: #f3eee9;
+      --ink: #e24a7b;          /* OMR drop-out magenta */
+      --ink-deep: #a8204f;
+      --ink-soft: rgba(226, 74, 123, .12);
+      --graphite: #232327;     /* pencil */
+      --text: #232327;
+      --muted: #6e6770;
+      --pen: #1f3fbf;          /* ballpoint blue */
+      --mark: #111114;         /* timing marks */
     }
-    @media (prefers-color-scheme: light) {
-      :root:not([data-theme="dark"]) {
-        --ink: #f3f5f9; --deep: #e8ecf3; --surface: #ffffff; --line: #d6deea;
-        --text: #0e1a2b; --muted: #52647d; --gold: #a8740f; --gold-soft: rgba(168, 116, 15, .12);
-        --pass: #11875f; --pass-soft: rgba(17, 135, 95, .12); --shadow: 0 30px 70px -35px rgba(14, 26, 43, .35);
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #16141a; --paper-2: #1e1b23; --ink: #ff6f9c; --ink-deep: #ff9dbc; --ink-soft: rgba(255, 111, 156, .12);
+        --graphite: #efeaf2; --text: #efeaf2; --muted: #a49ca9; --pen: #8ea3ff; --mark: #efeaf2;
       }
     }
+    :root[data-theme="dark"] {
+      --paper: #16141a; --paper-2: #1e1b23; --ink: #ff6f9c; --ink-deep: #ff9dbc; --ink-soft: rgba(255, 111, 156, .12);
+      --graphite: #efeaf2; --text: #efeaf2; --muted: #a49ca9; --pen: #8ea3ff; --mark: #efeaf2;
+    }
+
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; }
     body {
-      margin: 0; background: var(--ink); color: var(--text);
-      font: 16px/1.6 "Instrument Sans", system-ui, sans-serif;
-      background-image: radial-gradient(1200px 600px at 85% -10%, var(--gold-soft), transparent 60%);
-      background-repeat: no-repeat;
+      margin: 0; background: var(--paper); color: var(--text);
+      font: 400 16px/1.6 "Archivo", system-ui, sans-serif; font-variation-settings: "wdth" 100;
     }
-    a { color: var(--gold); text-underline-offset: 3px; }
-    :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    /* OMR timing track down the left edge */
+    body::before {
+      content: ""; position: fixed; left: 14px; top: 0; bottom: 0; width: 14px; z-index: 0;
+      background: repeating-linear-gradient(to bottom, transparent 0 22px, var(--mark) 22px 30px);
+      opacity: .9;
+    }
+    a { color: var(--ink-deep); text-underline-offset: 3px; }
+    :focus-visible { outline: 2px solid var(--pen); outline-offset: 3px; }
+    .sheet { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 40px 0 64px; }
 
-    /* ---------- top bar ---------- */
-    header { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
-    .brand { display: flex; align-items: center; gap: 10px; font: 700 18px "Bricolage Grotesque", sans-serif; letter-spacing: -.01em; }
-    .mark { width: 30px; height: 30px; border-radius: 9px; background: var(--gold); color: var(--ink); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
-    .exam-link { font-size: 14px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); padding: 7px 14px; border-radius: 999px; }
-    .exam-link:hover { color: var(--text); border-color: var(--muted); }
+    /* ---------- header strip ---------- */
+    .strip {
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      border-bottom: 2px solid var(--ink); padding: 22px 0 14px; color: var(--ink-deep);
+    }
+    .strip .title { font: 800 15px "Archivo"; font-variation-settings: "wdth" 115; letter-spacing: .02em; }
+    .strip .meta { font-size: 13.5px; display: flex; gap: 20px; }
+    .strip .meta span b { color: var(--text); font-weight: 600; }
+    .strip a { color: var(--ink-deep); }
 
     /* ---------- hero ---------- */
-    .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 56px 0 72px; }
+    .hero { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; padding: 56px 0 64px; align-items: start; }
     h1 {
-      font: 800 clamp(44px, 6.4vw, 84px)/.95 "Bricolage Grotesque", sans-serif;
-      letter-spacing: -.035em; margin: 0 0 22px;
+      margin: 0 0 22px; font-weight: 900; font-size: clamp(52px, 7.6vw, 108px); line-height: .86;
+      font-variation-settings: "wdth" 62; letter-spacing: -.01em; text-transform: none;
     }
-    .lede { font-size: 19px; color: var(--muted); max-width: 30em; margin: 0 0 32px; }
-    .cmd {
-      display: flex; align-items: stretch; background: var(--deep); border: 1px solid var(--line);
-      border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); max-width: 560px;
+    h1 .outline { color: transparent; -webkit-text-stroke: 2px var(--ink); display: block; }
+    .lede { font-size: 18.5px; color: var(--muted); max-width: 31em; margin: 0 0 30px; }
+
+    .field-label { font-size: 13px; color: var(--ink-deep); margin: 0 0 6px; display: flex; justify-content: space-between; }
+    .field {
+      position: relative; border: 2px solid var(--ink); background: var(--paper);
+      display: flex; align-items: stretch;
     }
-    .cmd code {
-      flex: 1; min-width: 0; padding: 16px 18px; font: 500 13.5px/1.5 "JetBrains Mono", monospace;
-      color: var(--text); white-space: nowrap; overflow-x: auto; scrollbar-width: none;
+    .field code {
+      flex: 1; min-width: 0; padding: 14px 12px; overflow-x: auto; white-space: nowrap; scrollbar-width: thin;
+      font: 500 14px/1.4 "JetBrains Mono", monospace; color: var(--graphite);
+      /* one box per character, like a form field */
+      background-image: repeating-linear-gradient(to right, var(--ink-soft) 0 1px, transparent 1px 1ch);
+      background-position: 12px 0; background-size: auto 100%;
+      background-origin: content-box;
     }
-    .cmd code::-webkit-scrollbar { display: none; }
-    .cmd code .p { color: var(--gold); }
     .copy {
-      border: 0; background: var(--gold); color: #1b1203; font: 700 14px "Instrument Sans", sans-serif;
-      padding: 0 22px; cursor: pointer; transition: filter .15s;
+      flex: none; border: 0; border-left: 2px solid var(--ink); background: var(--ink); color: var(--paper);
+      font: 800 14px "Archivo"; font-variation-settings: "wdth" 110; padding: 0 22px; cursor: pointer;
     }
-    .copy:hover { filter: brightness(1.08); }
-    .hint { font-size: 14px; color: var(--muted); margin: 14px 0 0; }
-    kbd { font: 500 12px "JetBrains Mono", monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; color: var(--text); }
+    .copy:hover { background: var(--ink-deep); }
+    .stamp {
+      position: absolute; right: 18px; top: -26px; pointer-events: none;
+      font: 900 22px "Archivo"; font-variation-settings: "wdth" 80; letter-spacing: .08em; color: var(--ink);
+      border: 3px double var(--ink); padding: 2px 10px; transform: rotate(-9deg) scale(1.6); opacity: 0;
+    }
+    .stamp.hit { animation: stamp .55s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+    @keyframes stamp { 60% { opacity: .95; transform: rotate(-9deg) scale(.94); } 100% { opacity: .9; transform: rotate(-9deg) scale(1); } }
+    .note { font: 600 19px "Caveat", cursive; color: var(--pen); margin: 14px 0 0; transform: rotate(-1deg); }
 
-    /* ---------- scoreboard (the one loud element) ---------- */
-    .board {
-      background: linear-gradient(160deg, var(--surface), var(--deep));
-      border: 1px solid var(--line); border-radius: 24px; padding: 26px; box-shadow: var(--shadow);
+    /* ---------- OMR grid ---------- */
+    .omr { border: 2px solid var(--ink); background: var(--paper); }
+    .omr-head {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 2px solid var(--ink); padding: 10px 14px; color: var(--ink-deep); font-size: 13px;
     }
-    .board-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
-    .board-title { font-size: 14px; color: var(--muted); }
-    .score { font: 800 56px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-    .score small { font-size: 22px; color: var(--muted); font-weight: 500; }
-    .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-    .cell {
-      aspect-ratio: 1.25; border-radius: 10px; border: 1px solid var(--line); background: var(--deep);
-      display: flex; flex-direction: column; justify-content: space-between; padding: 8px 9px;
-      font-size: 12px; color: var(--muted); transition: background .35s, border-color .35s, color .35s, transform .35s;
+    .omr-cols { display: grid; grid-template-columns: repeat(5, 1fr); }
+    .col { border-right: 1px solid var(--ink); padding: 10px 6px 12px; }
+    .col:last-child { border-right: 0; }
+    .q { display: flex; align-items: center; gap: 4px; padding: 5px 2px; }
+    .q .num { width: 26px; text-align: right; font: 700 12.5px "Archivo"; font-variation-settings: "wdth" 75; color: var(--ink-deep); }
+    .b {
+      width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid var(--ink);
+      display: grid; place-items: center; font-size: 8.5px; color: var(--ink); flex: none; position: relative;
     }
-    .cell b { font: 700 15px "Bricolage Grotesque", sans-serif; color: var(--text); }
-    .cell.on { background: var(--pass-soft); border-color: var(--pass); color: var(--pass); }
-    .cell.on b { color: var(--pass); }
-    .cell.pop { transform: scale(1.06); }
-    .board-foot { display: flex; justify-content: space-between; margin-top: 18px; font-size: 13px; color: var(--muted); }
-    .timer { font-variant-numeric: tabular-nums; color: var(--text); }
+    .b::after {
+      content: ""; position: absolute; inset: 1px; border-radius: 50%; background: var(--graphite);
+      transform: scale(0); transition: transform .28s cubic-bezier(.3, 1.5, .5, 1);
+      /* pencil grain */
+      background-image: radial-gradient(circle at 30% 30%, rgba(255,255,255,.18), transparent 45%);
+    }
+    .b.fill::after { transform: scale(1); }
+    .omr-foot { display: grid; grid-template-columns: 1fr auto; border-top: 2px solid var(--ink); }
+    .omr-foot .legend { padding: 12px 14px; font-size: 13px; color: var(--muted); }
+    .office { border-left: 2px solid var(--ink); padding: 8px 16px; min-width: 190px; }
+    .office small { display: block; font-size: 12px; color: var(--ink-deep); }
+    .office .marks { font: 600 40px/1.05 "Caveat", cursive; color: var(--pen); }
+    .office .marks span { font: 500 16px "Archivo"; color: var(--muted); }
 
-    /* ---------- steps ---------- */
-    section { padding: 72px 0; border-top: 1px solid var(--line); }
-    h2 { font: 700 clamp(28px, 3.4vw, 40px)/1.1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em; margin: 0 0 12px; }
-    .section-lede { color: var(--muted); max-width: 36em; margin: 0 0 40px; }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; counter-reset: s; }
-    .step { position: relative; padding-top: 58px; }
-    .step::before {
-      counter-increment: s; content: counter(s); position: absolute; top: 0; left: 0;
-      font: 800 44px/1 "Bricolage Grotesque", sans-serif; color: var(--gold);
-    }
-    .step h3 { font: 700 20px "Bricolage Grotesque", sans-serif; margin: 0 0 8px; }
-    .step p { color: var(--muted); margin: 0; }
+    /* ---------- sections ---------- */
+    section { border-top: 2px solid var(--ink); padding: 56px 0; }
+    .sec-head { display: grid; grid-template-columns: 1fr 2fr; gap: 48px; }
+    h2 { margin: 0; font-weight: 900; font-size: clamp(30px, 3.6vw, 46px); line-height: .95; font-variation-settings: "wdth" 70; }
+    h2 small { display: block; font: 400 16px/1.55 "Archivo"; color: var(--muted); margin-top: 12px; max-width: 22em; font-variation-settings: "wdth" 100; }
 
-    /* ---------- coverage ---------- */
-    .cover { display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; }
-    .row { display: grid; grid-template-columns: 150px 1fr; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-    .row dt { font-weight: 600; }
-    .row dd { margin: 0; color: var(--muted); }
-    .tag { display: inline-block; font-size: 12.5px; padding: 2px 9px; border-radius: 999px; margin: 0 4px 4px 0; background: var(--deep); border: 1px solid var(--line); color: var(--text); }
-    .tag.gold { border-color: var(--gold); color: var(--gold); background: var(--gold-soft); }
-
-    /* ---------- dry run ---------- */
-    .dry { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; align-items: start; }
-    .dry pre {
-      margin: 0; background: var(--deep); border: 1px solid var(--line); border-radius: 14px; padding: 18px;
-      font: 500 13px/1.65 "JetBrains Mono", monospace; white-space: pre-wrap; word-break: break-all; color: var(--text);
+    .instructions { list-style: none; margin: 0; padding: 0; counter-reset: i; }
+    .instructions li { counter-increment: i; display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 16px 0; border-bottom: 1px dashed var(--ink); }
+    .instructions li:last-child { border-bottom: 0; }
+    .instructions li::before {
+      content: counter(i); width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--ink);
+      display: grid; place-items: center; font: 800 15px "Archivo"; color: var(--ink-deep);
     }
-    .ghost { margin-top: 12px; background: transparent; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 9px 16px; font: 600 14px "Instrument Sans", sans-serif; cursor: pointer; }
-    .ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .instructions b { display: block; font-size: 18px; margin-bottom: 2px; }
+    .instructions p { margin: 0; color: var(--muted); }
+    kbd { font: 700 12px "JetBrains Mono", monospace; border: 1.5px solid var(--graphite); border-radius: 4px; padding: 0 5px; color: var(--graphite); }
 
-    /* ---------- footer ---------- */
-    footer { border-top: 1px solid var(--line); padding: 40px 0 56px; }
-    .sign { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; }
-    .made { font: 700 clamp(26px, 3vw, 34px)/1.1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em; }
-    .made span { display: block; font: 400 14px "Instrument Sans", sans-serif; color: var(--muted); letter-spacing: 0; margin-top: 8px; }
-    .links { display: flex; gap: 18px; font-size: 14px; }
-    .links a { color: var(--muted); }
-    .links a:hover { color: var(--gold); }
+    table { width: 100%; border-collapse: collapse; border: 2px solid var(--ink); }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--ink); vertical-align: top; }
+    th { font-size: 13px; color: var(--ink-deep); font-weight: 600; background: var(--ink-soft); }
+    td:first-child { font-weight: 700; width: 34%; }
+    td .qs { font: 700 13.5px "JetBrains Mono", monospace; color: var(--graphite); }
+    td .why { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+    tr.pen td:first-child { color: var(--pen); }
 
-    @media (max-width: 900px) {
-      .hero, .dry, .cover { grid-template-columns: 1fr; }
-      .hero { gap: 40px; padding-top: 32px; }
-      .steps { grid-template-columns: 1fr; gap: 36px; }
+    .rough { border: 2px dashed var(--ink); padding: 18px; background: var(--paper-2); }
+    .rough pre { margin: 0; font: 500 13px/1.7 "JetBrains Mono", monospace; white-space: pre-wrap; word-break: break-all; color: var(--graphite); }
+    .rough-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; gap: 12px; flex-wrap: wrap; }
+    .rough-bar span { font: 600 18px "Caveat", cursive; color: var(--pen); }
+    .ghost { border: 2px solid var(--ink); background: transparent; color: var(--ink-deep); font: 800 13.5px "Archivo"; padding: 8px 16px; cursor: pointer; }
+    .ghost:hover { background: var(--ink); color: var(--paper); }
+
+    /* ---------- signature ---------- */
+    footer { border-top: 2px solid var(--ink); padding: 44px 0 64px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: end; }
+    .sig { max-width: 380px; }
+    .sig .hand { font: 400 clamp(46px, 6vw, 66px)/1 "Mrs Saint Delafield", cursive; color: var(--pen); padding: 0 0 2px 8px; transform: rotate(-3deg); transform-origin: left bottom; }
+    .sig .line { border-top: 1.5px solid var(--graphite); padding-top: 6px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); }
+    .sig .line b { color: var(--text); font-weight: 700; }
+    .links { justify-self: end; text-align: right; font-size: 14px; color: var(--muted); }
+    .links a { display: block; }
+
+    @media (max-width: 960px) {
+      .hero, .sec-head, footer { grid-template-columns: 1fr; gap: 36px; }
+      .links { justify-self: start; text-align: left; }
     }
-    @media (max-width: 520px) {
-      .wrap { padding: 0 16px; }
-      .board { padding: 18px; border-radius: 18px; }
-      .cell { font-size: 10.5px; padding: 6px; }
-      .cell b { font-size: 13px; }
-      .score { font-size: 44px; }
-      .row { grid-template-columns: 1fr; gap: 4px; }
-      .exam-link { display: none; }
+    @media (max-width: 640px) {
+      body::before { display: none; }
+      .sheet { padding: 0 16px; }
+      .strip .meta { display: none; }
+      .omr-cols { grid-template-columns: repeat(3, 1fr); }
+      .col:nth-child(3) { border-right: 0; }
+      .col:nth-child(n+4) { border-top: 1px solid var(--ink); }
+      .col:nth-child(4) { border-right: 1px solid var(--ink); }
+      .b { width: 15px; height: 15px; }
+      .omr-foot { grid-template-columns: 1fr; }
+      .office { border-left: 0; border-top: 2px solid var(--ink); }
+      td:first-child { width: 42%; }
     }
-    @media (prefers-reduced-motion: reduce) { .cell { transition: none; } }
+    @media (prefers-reduced-motion: reduce) {
+      .b::after { transition: none; }
+      .stamp.hit { animation: none; opacity: .9; transform: rotate(-9deg); }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand"><div class="mark">A</div>GA0 Solver</div>
-      <a class="exam-link" href="https://exam.sanand.workers.dev/tds-2026-09-ga0" target="_blank" rel="noopener">Open the exam</a>
-    </header>
+  <div class="sheet">
+    <div class="strip">
+      <div class="title">GA0 ANSWER SHEET</div>
+      <div class="meta">
+        <span>Course <b>Tools in Data Science</b></span>
+        <span>Term <b>Sep 2026</b></span>
+        <span><a href="https://exam.sanand.workers.dev/tds-2026-09-ga0" target="_blank" rel="noopener">Open the exam</a></span>
+      </div>
+    </div>
 
     <main>
       <div class="hero">
         <div>
-          <h1>All of GA0 in one paste.</h1>
-          <p class="lede">Open the TDS September GA0 exam, paste one line in the console and press Start. The solver builds your answers, checks them against the exam's own graders and saves.</p>
-          <div class="cmd">
-            <code id="run"><span class="p">import</span>('https://angadseth.github.io/tds-ga0-solver/solver.js?'+Date.now())</code>
-            <button class="copy" data-copy="run">Copy</button>
+          <h1>Fill all 25 bubbles <span class="outline">with one paste.</span></h1>
+          <p class="lede">Open the GA0 exam, paste this line in the browser console and press Start. It builds your answers, checks each one with the exam's own graders, then saves.</p>
+
+          <p class="field-label"><span>Paste in the exam page console</span><span>F12 → Console</span></p>
+          <div class="field">
+            <code id="run">import('https://angadseth.github.io/tds-ga0-solver/solver.js?'+Date.now())</code>
+            <button class="copy" data-copy="run" data-stamp="s1">Copy</button>
+            <div class="stamp" id="s1">COPIED</div>
           </div>
-          <p class="hint">On the exam page press <kbd>F12</kbd>, open Console, paste and hit <kbd>Enter</kbd>.</p>
+          <p class="note">Chrome may ask you to type "allow pasting" first.</p>
         </div>
 
-        <div class="board" aria-label="Question scoreboard">
-          <div class="board-top">
-            <div class="board-title">Your 25 questions</div>
-            <div class="score"><span id="score">0</span><small> / 35.5</small></div>
+        <div class="omr" aria-label="Sample answer sheet being filled">
+          <div class="omr-head"><span>Questions 1 – 25</span><span>Use HB pencil only</span></div>
+          <div class="omr-cols" id="cols"></div>
+          <div class="omr-foot">
+            <div class="legend">A sample run filling in. Your real score shows in the panel on the exam page.</div>
+            <div class="office"><small>Marks obtained</small><div class="marks"><output id="score">0</output> <span>/ 35.5</span></div></div>
           </div>
-          <div class="grid" id="grid"></div>
-          <div class="board-foot"><span>Preview of a run</span><span class="timer" id="timer">0.0s</span></div>
         </div>
       </div>
 
       <section>
-        <h2>Three steps, about a minute</h2>
-        <p class="section-lede">Everything runs inside your own logged-in exam tab, so the save is yours and signed by the exam.</p>
-        <div class="steps">
-          <div class="step">
-            <h3>Sign in to the exam</h3>
-            <p>Open <a href="https://exam.sanand.workers.dev/tds-2026-09-ga0" target="_blank" rel="noopener">tds-2026-09-ga0</a> and log in with your IITM Google account.</p>
-          </div>
-          <div class="step">
-            <h3>Paste the line</h3>
-            <p>Copy the command above into the Console. If Chrome blocks it, type <kbd>allow pasting</kbd> first. A panel opens in the corner.</p>
-          </div>
-          <div class="step">
-            <h3>Press Start</h3>
-            <p>Add your AI Pipe token if you want Q2 and Q12. The panel fills every box, saves, and shows your score question by question.</p>
-          </div>
+        <div class="sec-head">
+          <h2>Instructions to candidates<small>It all runs in your own logged-in exam tab, so the save is yours and signed by the exam.</small></h2>
+          <ol class="instructions">
+            <li><div><b>Sign in to the exam</b><p>Open <a href="https://exam.sanand.workers.dev/tds-2026-09-ga0" target="_blank" rel="noopener">tds-2026-09-ga0</a> and log in with your IITM Google account.</p></div></li>
+            <li><div><b>Paste the line</b><p>Press <kbd>F12</kbd>, open Console, paste the command above and press <kbd>Enter</kbd>. A panel opens in the bottom-right corner.</p></div></li>
+            <li><div><b>Add your AI Pipe token</b><p>Optional. Q2 and Q12 are graded by AI Pipe with your own token. Leave it empty to skip those 3 marks.</p></div></li>
+            <li><div><b>Press Start</b><p>Every box is filled and checked, then saved. The panel shows each question as it lands and your total at the end.</p></div></li>
+          </ol>
         </div>
       </section>
 
       <section>
-        <h2>What handles each question</h2>
-        <p class="section-lede">Most answers are computed in your browser from your email. A few need a live service, which is already running.</p>
-        <dl class="cover">
-          <div class="row"><dt>In your browser</dt><dd>
-            <span class="tag">Q1</span><span class="tag">Q3</span><span class="tag">Q4</span><span class="tag">Q6</span><span class="tag">Q7</span><span class="tag">Q8</span><span class="tag">Q9</span><span class="tag">Q14</span><span class="tag">Q15</span><span class="tag">Q16</span><span class="tag">Q19</span><span class="tag">Q20</span><span class="tag">Q21</span><span class="tag">Q22</span><span class="tag">Q23</span>
-          </dd></div>
-          <div class="row"><dt>Shared service</dt><dd>
-            <span class="tag">Q5</span><span class="tag">Q10</span><span class="tag">Q11</span><span class="tag">Q18</span><span class="tag">Q25</span>
-          </dd></div>
-          <div class="row"><dt>GitHub, set up for you</dt><dd><span class="tag">Q13</span><span class="tag">Q24</span></dd></div>
-          <div class="row"><dt>Network game</dt><dd><span class="tag">Q17</span> played for your email</dd></div>
-          <div class="row"><dt>Your AI Pipe token</dt><dd><span class="tag gold">Q2</span><span class="tag gold">Q12</span> the exam calls AI Pipe with it</dd></div>
-          <div class="row"><dt>Official score</dt><dd>"Recent saves" on the exam page</dd></div>
-        </dl>
+        <div class="sec-head">
+          <h2>Who answers what<small>Most answers are worked out in your browser from your email. The rest use services that are already running.</small></h2>
+          <table>
+            <thead><tr><th>Handled by</th><th>Questions</th></tr></thead>
+            <tbody>
+              <tr><td>Your browser</td><td><span class="qs">1 3 4 6 7 8 9 14 15 16 19 20 21 22 23</span><span class="why">Charts, SQL, hashes, files and the image puzzle</span></td></tr>
+              <tr><td>Shared service</td><td><span class="qs">5 10 11 18 25</span><span class="why">The API questions: code runner, FastAPI, sentiment, Ollama, latency</span></td></tr>
+              <tr><td>GitHub</td><td><span class="qs">13 24</span><span class="why">Action run and email.json, set up for you</span></td></tr>
+              <tr><td>Network game</td><td><span class="qs">17</span><span class="why">Played for your email, token filled in</span></td></tr>
+              <tr class="pen"><td>Your AI Pipe token</td><td><span class="qs">2 12</span><span class="why">The exam calls AI Pipe with it when you save</span></td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section>
-        <div class="dry">
-          <div>
-            <h2>Try it without saving</h2>
-            <p class="section-lede" style="margin-bottom:0">A dry run checks answers for 23 test emails with the exam's graders. Nothing is submitted, so your saved score stays as it is.</p>
-          </div>
-          <div>
+        <div class="sec-head">
+          <h2>Rough work<small>Check answers for 23 test emails without saving anything. Your saved score stays as it is.</small></h2>
+          <div class="rough">
             <pre id="test">globalThis.__ga0NoPanel=true; const S=await import('https://angadseth.github.io/tds-ga0-solver/solver.js?'+Date.now()); await S.selfTest(Array.from({length:23},(_,i)=>`zz-ga0-test-${i+1}@ds.study.iitm.ac.in`))</pre>
-            <button class="ghost" data-copy="test">Copy dry run</button>
+            <div class="rough-bar"><span>Paste this in the same console</span><button class="ghost" data-copy="test">Copy dry run</button></div>
           </div>
         </div>
       </section>
     </main>
 
     <footer>
-      <div class="sign">
-        <div class="made">Made by Angad Jangir<span>IIT Madras BS · Tools in Data Science</span></div>
-        <nav class="links">
-          <a href="https://github.com/angadseth/tds-ga0-solver" target="_blank" rel="noopener">Solver source</a>
-          <a href="https://github.com/angadseth/tds-ga0-server" target="_blank" rel="noopener">Service source</a>
-        </nav>
+      <div class="sig">
+        <div class="hand">Angad Jangir</div>
+        <div class="line"><span>Signature of creator</span><b>Made by Angad Jangir</b></div>
+        <p style="margin:8px 0 0;color:var(--muted);font-size:13px">IIT Madras BS · Tools in Data Science</p>
+      </div>
+      <div class="links">
+        <a href="https://github.com/angadseth/tds-ga0-solver" target="_blank" rel="noopener">Solver source on GitHub</a>
+        <a href="https://github.com/angadseth/tds-ga0-server" target="_blank" rel="noopener">Service source on GitHub</a>
       </div>
     </footer>
   </div>
@@ -244,44 +278,37 @@
   <script>
     // Question weights in exam order (35.5 total).
     const W = [1, 1, 1, .5, 1, 1, 1, 2, 1, 3, 1, 2, 1, 1, 1, 3, 1, 3, 2, .5, .5, 2, 1, 1, 3];
-    const grid = document.getElementById("grid");
-    W.forEach((w, i) => {
-      const c = document.createElement("div");
-      c.className = "cell";
-      c.innerHTML = `<b>Q${i + 1}</b><span>${w} ${w === 1 ? "mark" : "marks"}</span>`;
-      grid.appendChild(c);
-    });
-    const cells = [...grid.children];
+    const cols = document.getElementById("cols");
+    const rows = [];
+    for (let c = 0; c < 5; c++) {
+      const col = document.createElement("div");
+      col.className = "col";
+      for (let r = 0; r < 5; r++) {
+        const i = c * 5 + r;
+        const q = document.createElement("div");
+        q.className = "q";
+        q.innerHTML = `<span class="num">${i + 1}</span>` + "abcd".split("").map((o) => `<span class="b">${o}</span>`).join("");
+        col.appendChild(q);
+        rows[i] = q;
+      }
+      cols.appendChild(col);
+    }
     const scoreEl = document.getElementById("score");
-    const timerEl = document.getElementById("timer");
     const fmt = (n) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
 
-    function play() {
+    function fillAll() {
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) {
-        cells.forEach((c) => c.classList.add("on"));
-        scoreEl.textContent = "35.5";
-        timerEl.textContent = "done";
-        return;
-      }
-      // Fill in a shuffled order, the way parallel answers land.
-      const order = cells.map((_, i) => i).sort(() => Math.random() - 0.5);
       let total = 0;
-      const t0 = performance.now();
-      order.forEach((i, k) => {
-        setTimeout(() => {
-          cells[i].classList.add("on", "pop");
-          setTimeout(() => cells[i].classList.remove("pop"), 260);
-          total += W[i];
-          scoreEl.textContent = fmt(total);
-          timerEl.textContent = ((performance.now() - t0) / 1000).toFixed(1) + "s";
-        }, 500 + k * 90 + Math.random() * 60);
+      rows.forEach((q, i) => {
+        const bubbles = q.querySelectorAll(".b");
+        const pick = bubbles[Math.floor(Math.random() * 4)];
+        const go = () => { pick.classList.add("fill"); total += W[i]; scoreEl.textContent = fmt(total); };
+        reduce ? go() : setTimeout(go, 350 + i * 110 + Math.random() * 50);
       });
     }
-    // Play once, when the board is on screen.
-    new IntersectionObserver((entries, obs) => {
-      if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); play(); }
-    }, { threshold: .4 }).observe(document.querySelector(".board"));
+    new IntersectionObserver((e, obs) => {
+      if (e.some((x) => x.isIntersecting)) { obs.disconnect(); fillAll(); }
+    }, { threshold: .35 }).observe(document.querySelector(".omr"));
 
     document.querySelectorAll("[data-copy]").forEach((b) => {
       const label = b.textContent;
@@ -289,6 +316,8 @@
         try {
           await navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent);
           b.textContent = "Copied";
+          const s = b.dataset.stamp && document.getElementById(b.dataset.stamp);
+          if (s) { s.classList.remove("hit"); void s.offsetWidth; s.classList.add("hit"); }
         } catch {
           b.textContent = "Select and copy";
         }
