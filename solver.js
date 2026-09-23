@@ -372,13 +372,40 @@ export const YES_PROMPTS = [
 
 export const RUBRICS = {
   data_analysis_narrative: [
-    "Does the output state at least two specific numeric values such as percentages or amounts?",
-    "Does the output explain why a change happened rather than only listing numbers?",
-    "Does the output identify one finding explicitly as surprising, unexpected or non-obvious?",
-    "Does the output compare values across time periods, such as from one quarter to the next?",
-    "Does the output draw an implication or recommendation from the numbers?",
-    "Does the output connect two or more metrics to each other in a causal or explanatory way?",
-    "Does the output avoid vague phrases and give precise figures for each metric it mentions?",
+    "Does the output interpret the numbers by explaining a cause, driver or implication (for example with words like suggests, indicates, implies, likely or because)?",
+    "Does the output go beyond restating metric values to say what the change means?",
+    "Is the output written as explanatory sentences rather than a terse list of metrics and values?",
+    "Does the output contain an insight, takeaway or conclusion rather than only raw figures?",
+    "Would a reader learn why something happened, not just what the numbers were?",
+    "Does the output connect two different metrics to explain how one relates to or drove the other?",
+    "Does the output use reasoning connectors such as but, yet, although, despite, so or because to relate facts?",
+  ],
+  sql_query_quality: [
+    "Does the SQL query define a common table expression using a WITH clause?",
+    "Does the SQL query handle NULL values explicitly, for example with COALESCE?",
+    "Does the query use COALESCE on at least one column?",
+    "Does the query organise its logic in a named intermediate step (a CTE) before the final SELECT?",
+    "Does the query contain both a WITH clause and a COALESCE call?",
+    "Does the query clean or transform data, such as replacing NULLs with defaults, rather than only selecting raw columns?",
+    "Is the query more than a single plain SELECT statement with no CTE and no NULL handling?",
+  ],
+  api_documentation: [
+    "Does the documentation list at least one HTTP status code with its reason phrase, such as 200 OK or 404 Not Found?",
+    "Does the documentation specify a Content-Type such as application/json?",
+    "Does the documentation include an example request, such as a curl command or a sample request body?",
+    "Does the documentation list more than one possible HTTP response status code?",
+    "Does the documentation include error status codes such as 400, 401, 404 or 429?",
+    "Is the documentation detailed enough that a developer could call the endpoint without guessing the request format or response codes?",
+    "Does the documentation give both a request example and the possible response status codes?",
+  ],
+  prompt_engineering: [
+    "Does the prompt specify an exact output format such as JSON, CSV, a schema or a code block?",
+    "Does the prompt include instructions for edge cases such as empty, missing or noisy input?",
+    "Does the prompt include or require a worked example of input and output?",
+    "Does the prompt explicitly constrain the response format, for example 'return ONLY JSON' or 'exactly 3 bullet points'?",
+    "Does the prompt define what to output when information is missing or the input is empty?",
+    "Does the prompt give requirements beyond the bare task description, such as format, examples or edge-case handling?",
+    "Does the prompt contain more than one instruction, going beyond simply naming the task?",
   ],
 };
 
@@ -419,7 +446,7 @@ function makeBuilders(email, mod, qs, token, log) {
 
   if (token) {
     builders["q-get-llm-to-say-yes"] = () => YES_PROMPTS[0];
-    builders["q-binary-eval-rubric"] = () => rubricFor(qs["q-binary-eval-rubric"]);
+    builders["q-binary-eval-rubric"] = () => rubricFor(email);
   }
   return builders;
 }
@@ -560,13 +587,13 @@ async function solve(ui) {
   log(`done in ${((performance.now() - t0) / 1000).toFixed(1)}s — see "Recent saves" on the page for the official score`);
 }
 
-async function rubricFor(q) {
-  // The task is only visible in the rendered question text; match it to a prepared rubric.
-  const card = document.querySelector('[data-question="q-binary-eval-rubric"]');
-  const text = card?.textContent || "";
-  const n = Number((text.match(/Write exactly\s+(\d+)\s+binary checks/) || [])[1] || 5);
-  const key = Object.keys(RUBRICS).find((k) => text.toLowerCase().includes(k.replace(/_/g, " "))) || Object.keys(RUBRICS)[0];
-  return RUBRICS[key].slice(0, n).join("\n");
+function rubricFor(email) {
+  // Same draws as the exam: task = pick(keys), count = pick([5, 6, 7]).
+  const n = seedrandom(`${email}#q-binary-eval-rubric`);
+  const pick = (a) => a[Math.floor(n() * a.length)];
+  const task = pick(Object.keys(RUBRICS));
+  const count = pick([5, 6, 7]);
+  return RUBRICS[task].slice(0, count).join(String.fromCharCode(10));
 }
 
 function main() {
