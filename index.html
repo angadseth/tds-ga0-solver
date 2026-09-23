@@ -1,1 +1,81 @@
-<!doctype html><title>GA0 Solver</title><p>Coming soon.</p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GA0 Solver</title>
+  <style>
+    :root { --bg:#0b1120; --card:#111a2e; --line:#23304a; --text:#e2e8f0; --muted:#94a3b8; --accent:#22c55e; --code:#0a0f1c; }
+    @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --bg:#f8fafc; --card:#fff; --line:#e2e8f0; --text:#0f172a; --muted:#475569; --code:#f1f5f9; } }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:15px/1.6 system-ui,-apple-system,Segoe UI,sans-serif; }
+    main { max-width:760px; margin:0 auto; padding:40px 16px 64px; }
+    h1 { font-size:30px; margin:0 0 4px; }
+    .sub { color:var(--muted); margin:0 0 28px; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:14px 0; }
+    .step { display:flex; gap:14px; }
+    .n { flex:none; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#052e16; font-weight:800; display:grid; place-items:center; }
+    h2 { font-size:17px; margin:2px 0 6px; }
+    p { margin:6px 0; }
+    code, pre { font-family: ui-monospace, Consolas, monospace; font-size:13px; }
+    pre { background:var(--code); border:1px solid var(--line); border-radius:10px; padding:12px; overflow-x:auto; white-space:pre-wrap; word-break:break-all; margin:10px 0 0; }
+    button { border:0; border-radius:8px; background:var(--accent); color:#052e16; font-weight:700; padding:8px 14px; cursor:pointer; margin-top:10px; }
+    a { color:var(--accent); }
+    .muted { color:var(--muted); font-size:14px; }
+    table { width:100%; border-collapse:collapse; font-size:14px; }
+    td { padding:5px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+    td:first-child { color:var(--muted); width:42%; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>GA0 Solver</h1>
+  <p class="sub">TDS 2026 Sep · GA0 · 25 questions · runs on the exam page in your own login</p>
+
+  <div class="card step"><div class="n">1</div><div>
+    <h2>Open the exam and sign in</h2>
+    <p>Go to <a href="https://exam.sanand.workers.dev/tds-2026-09-ga0" target="_blank" rel="noopener">exam.sanand.workers.dev/tds-2026-09-ga0</a> and log in with your IITM Google account.</p>
+  </div></div>
+
+  <div class="card step"><div class="n">2</div><div style="min-width:0;flex:1">
+    <h2>Paste this in the console</h2>
+    <p>Press <code>F12</code> → <b>Console</b> tab → paste → Enter. (If Chrome asks, type <code>allow pasting</code> first.)</p>
+    <pre id="run">import('https://angadseth.github.io/tds-ga0-solver/solver.js?'+Date.now())</pre>
+    <button data-copy="run">Copy</button>
+  </div></div>
+
+  <div class="card step"><div class="n">3</div><div>
+    <h2>Click Start</h2>
+    <p>A panel appears bottom-right. Optionally paste your <a href="https://aipipe.org" target="_blank" rel="noopener">AI Pipe</a> token (needed for Q2 and Q12), then click <b>Start</b>. It fills all answers, checks them, clicks <b>Save</b> and shows your score.</p>
+    <p class="muted">Official score = "Recent saves" on the exam page.</p>
+  </div></div>
+
+  <div class="card">
+    <h2>Dry run (no Save)</h2>
+    <p class="muted">Checks answers for test emails with the exam's own checkers. Nothing is submitted.</p>
+    <pre id="test">globalThis.__ga0NoPanel=true; const S=await import('https://angadseth.github.io/tds-ga0-solver/solver.js?'+Date.now()); await S.selfTest(Array.from({length:23},(_,i)=>`zz-ga0-test-${i+1}@ds.study.iitm.ac.in`))</pre>
+    <button data-copy="test">Copy</button>
+  </div>
+
+  <div class="card">
+    <h2>What needs what</h2>
+    <table>
+      <tr><td>Q2 rubric, Q12 "say Yes"</td><td>Your AI Pipe token (the exam calls AI Pipe with it)</td></tr>
+      <tr><td>Q5, Q10, Q11, Q18, Q25</td><td>Shared service <code>tds-ga0-ngrok.vercel.app</code></td></tr>
+      <tr><td>Q13 GitHub Action, Q24 GitHub</td><td>Shared repos, set up automatically</td></tr>
+      <tr><td>Q17 Network game</td><td>Played automatically for your email</td></tr>
+      <tr><td>Everything else</td><td>Computed in your browser</td></tr>
+    </table>
+  </div>
+</main>
+<script>
+  document.querySelectorAll("[data-copy]").forEach((b) => {
+    b.onclick = async () => {
+      await navigator.clipboard.writeText(document.getElementById(b.dataset.copy).textContent);
+      b.textContent = "Copied ✓";
+      setTimeout(() => (b.textContent = "Copy"), 1500);
+    };
+  });
+</script>
+</body>
+</html>
